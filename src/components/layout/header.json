@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_layout_headers",
+  "info": {
+    "displayName": "header"
+  },
+  "options": {},
+  "attributes": {
+    "description": {
+      "type": "text"
+    },
+    "navItems": {
+      "type": "component",
+      "component": "shared.link",
+      "repeatable": true
+    },
+    "logo": {
+      "type": "component",
+      "component": "shared.logo",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

@@ -1,0 +1,68 @@
+{
+  "collectionName": "components_shared_laptop_specifications",
+  "info": {
+    "displayName": "LaptopSpecifications"
+  },
+  "options": {},
+  "attributes": {
+    "processor": {
+      "type": "string"
+    },
+    "storage": {
+      "type": "string"
+    },
+    "ram": {
+      "type": "string"
+    },
+    "gpu": {
+      "type": "string"
+    },
+    "displaySize": {
+      "type": "string"
+    },
+    "battry": {
+      "type": "string"
+    },
+    "weight": {
+      "type": "string"
+    },
+    "colors": {
+      "type": "enumeration",
+      "enum": [
+        "silver",
+        "sky blue",
+        "midnight",
+        "starlight"
+      ]
+    },
+    "series": {
+      "type": "string"
+    },
+    "audioFeatures": {
+      "type": "string"
+    },
+    "USBType": {
+      "type": "string"
+    },
+    "fingerprintSensor": {
+      "type": "string"
+    },
+    "operatingSystem": {
+      "type": "string"
+    },
+    "batteryType": {
+      "type": "string"
+    },
+    "warrantyDetails": {
+      "type": "string"
+    },
+    "storageType": {
+      "type": "enumeration",
+      "enum": [
+        "SSD",
+        "HDD"
+      ]
+    }
+  },
+  "config": {}
+}

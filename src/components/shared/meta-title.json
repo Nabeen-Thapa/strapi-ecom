@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_shared_meta_titles",
+  "info": {
+    "displayName": "metaTitle",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

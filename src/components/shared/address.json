@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_shared_addresses",
+  "info": {
+    "displayName": "address",
+    "icon": "envelop"
+  },
+  "options": {},
+  "attributes": {
+    "country": {
+      "type": "string",
+      "required": false
+    },
+    "city": {
+      "type": "string",
+      "required": false
+    },
+    "state": {
+      "type": "string",
+      "required": false,
+      "unique": false
+    },
+    "tole": {
+      "type": "string"
+    },
+    "houseNunber": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

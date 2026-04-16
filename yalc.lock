@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "payment": {
+      "signature": "94503366e3af9b8c01f67f9e203310bc",
+      "file": true,
+      "replaced": "link:.yalc/payment"
+    }
+  }
+}

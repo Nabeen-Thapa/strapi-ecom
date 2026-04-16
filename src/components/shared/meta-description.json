@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_shared_meta_descriptions",
+  "info": {
+    "displayName": "metaDescription",
+    "icon": "layer"
+  },
+  "options": {},
+  "attributes": {
+    "description": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}

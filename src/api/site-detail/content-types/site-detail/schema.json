@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_details",
+  "info": {
+    "singularName": "site-detail",
+    "pluralName": "site-details",
+    "displayName": "site-detail"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "siteName": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "biginteger"
+    }
+  }
+}

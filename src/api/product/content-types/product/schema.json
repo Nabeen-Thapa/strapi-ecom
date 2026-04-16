@@ -1,0 +1,102 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stock": {
+      "type": "integer"
+    },
+    "brand": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::brand.brand",
+      "inversedBy": "products"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "products"
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "product"
+    },
+    "seller": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "products"
+    },
+    "Price": {
+      "type": "decimal"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "productImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "isFeatured": {
+      "type": "boolean"
+    },
+    "sku": {
+      "type": "uid",
+      "targetField": "name"
+    },
+    "attributes": {
+      "type": "component",
+      "component": "shared.laptop-specifications",
+      "repeatable": true
+    },
+    "discount": {
+      "type": "component",
+      "component": "shared.discount",
+      "repeatable": true
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "product_reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-review.product-review",
+      "mappedBy": "product"
+    },
+    "totalReviews": {
+      "type": "integer"
+    },
+    "wish_lists": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::wish-list.wish-list",
+      "mappedBy": "product"
+    }
+  }
+}

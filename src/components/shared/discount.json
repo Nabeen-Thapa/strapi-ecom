@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_shared_discounts",
+  "info": {
+    "displayName": "discount"
+  },
+  "options": {},
+  "attributes": {
+    "discountType": {
+      "type": "enumeration",
+      "enum": [
+        "percentage",
+        "fixed"
+      ]
+    },
+    "discountValue": {
+      "type": "biginteger"
+    },
+    "isDiscountActive": {
+      "type": "boolean"
+    },
+    "discountExpiresAt": {
+      "type": "datetime"
+    }
+  },
+  "config": {}
+}
