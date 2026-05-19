@@ -1,5 +1,7 @@
 // import type { Core } from '@strapi/strapi';
 
+import redisClient from "../config/redis";
+
 export default {
   /**
    * An asynchronous register function that runs before
@@ -7,7 +9,7 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register(/* { strapi }: { strapi: Core.Strapi } */) { },
 
   /**
    * An asynchronous bootstrap function that runs before
@@ -16,5 +18,13 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+
+
+  async bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {
+    await redisClient.set("test", "Hello Redis");
+
+    const value = await redisClient.get("test");
+
+    console.log("redis responce:",value);
+  },
 };

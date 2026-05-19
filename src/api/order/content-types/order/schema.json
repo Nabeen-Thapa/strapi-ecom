@@ -31,6 +31,27 @@
     },
     "totalPrice": {
       "type": "decimal"
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "completed",
+        "refunded",
+        "cancelled",
+        "refunding"
+      ]
+    },
+    "paymentMethod": {
+      "type": "string"
+    },
+    "stripeSessionId": {
+      "type": "string"
+    },
+    "stripePaymentIntentId": {
+      "type": "string"
     }
   }
 }

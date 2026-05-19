@@ -3,6 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
+import redisClient from '../../../../config/redis';
 
 export default factories.createCoreController('api::product.product', ({ strapi }) => ({
     async create(ctx) {
@@ -17,8 +18,79 @@ export default factories.createCoreController('api::product.product', ({ strapi 
         const response = await strapi.documents("api::product.product").create({
             data: newData,
         });
+        // save data on redis 
+
+        const cacheKey = `products:id:${response.documentId}`;
+        const cacheProduct = await redisClient.set(cacheKey,
+            JSON.stringify(response), {
+            EX: 336600
+        })
+
+        // const cachedProducts = await redisClient.get(response.documentId);
+        // console.log("procust create controller new redis data:", cachedProducts)
+
         return { data: response };
     },
+    // async find(ctx) {
+    //     const cacheKey = "products:all";
+
+    //     // 1. Try Redis first
+    //     const cached = await redisClient.get(cacheKey);
+
+    //     if (cached) {
+    //         return {
+    //             data: JSON.parse(cached),
+    //             source: "redis"
+    //         };
+    //     }
+
+    //     // 2. fallback to Strapi default DB logic
+    //     const result = await super.find(ctx);
+
+    //     // 3. store in Redis
+    //     await redisClient.set(
+    //         cacheKey,
+    //         JSON.stringify(result.data),
+    //         { EX: 60 } // 1 min cache
+    //     );
+
+    //     return {
+    //         ...result,
+    //         source: "db"
+    //     };
+    // },
+
+    // async findOne(ctx) {
+    //     const { id } = ctx.params;
+
+    //     const cacheKey = `products:id:${id}`;
+
+    //     // 1. Redis check
+    //     const cached = await redisClient.get(cacheKey);
+
+    //     if (cached) {
+    //         return {
+    //             data: JSON.parse(cached.toString()),
+    //             source: "redis"
+    //         };
+    //     }
+    //     if (!cached) console.log("data not fiunct in redsi")
+
+    //     // 2. fallback to Strapi
+    //     const result = await super.findOne(ctx);
+    //     console.log("database responce in findone:", result)
+    //     // 3. cache it
+    //     // await redisClient.set(
+    //     //     cacheKey,
+    //     //     JSON.stringify(result.data),
+    //     //     { EX: 300 }
+    //     // );
+
+    //     return {
+    //         ...result,
+    //         source: "db"
+    //     };
+    // },
 
     async update(ctx) {
         const user = ctx.state.user;
@@ -69,16 +141,16 @@ export default factories.createCoreController('api::product.product', ({ strapi 
 
         const products = await strapi.documents(
             "api::product.product").findMany(
-            {
-                filters: {
-                },
-                populate: {
-                    brand: true,
-                    category: true,
-                    productImages: true,
-                },
-            }
-        );
+                {
+                    filters: {
+                    },
+                    populate: {
+                        brand: true,
+                        category: true,
+                        productImages: true,
+                    },
+                }
+            );
 
         const filtered = (products as any[]).filter((p) => {
             const name = p.name?.toLowerCase() || "";
@@ -91,8 +163,8 @@ export default factories.createCoreController('api::product.product', ({ strapi 
                 category.includes(query)
             );
         });
-        if(filtered.length ===0){
-            return{
+        if (filtered.length === 0) {
+            return {
                 message: "not product found",
                 data: []
             }

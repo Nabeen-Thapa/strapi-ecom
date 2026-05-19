@@ -1,17 +1,14 @@
-
-export const createOrUpdateOrder = async (strapi: any, userId: string, orderItem) => {
-    const createdOrders = [];
-    const order = await strapi.documents('api::order.order').create({
-        data: {
-            product: orderItem.product,
-            users_permissions_user: userId,
-            quantity: orderItem.quantity,
-            price: orderItem.price,
-            totalPrice: orderItem.price * orderItem.quantity,
-        }
-    });
-    createdOrders.push(order);
-}
+export const createOrUpdateOrder = async (strapi, userId, orderItem) => {
+  return await strapi.documents('api::order.order').create({
+    data: {
+      product: orderItem.product,
+      users_permissions_user: userId,
+      quantity: orderItem.quantity,
+      price: orderItem.price,
+      totalPrice: orderItem.price * orderItem.quantity,
+    }
+  });
+};
 
 
 
@@ -37,27 +34,27 @@ export const sendSeccess = async (data, ctx) => {
     });
 }
 
-export const decreaseProductStock = async (
-  strapi: any,
-  productDocumentId: string,
-  quantity: number
-) => {
-  const product: any = await strapi.documents('api::product.product').findOne({
-    documentId: productDocumentId,
-  });
+// export const decreaseProductStock = async (
+//   strapi: any,
+//   productDocumentId: string,
+//   quantity: number
+// ) => {
+//   const product: any = await strapi.documents('api::product.product').findOne({
+//     documentId: productDocumentId,
+//   });
 
-  if (!product) {
-    throw new Error('Product not found');
-  }
+//   if (!product) {
+//     throw new Error('Product not found');
+//   }
 
-  if (Number(product.stock) < Number(quantity)) {
-    throw new Error(`Not enough stock for ${product.name}`);
-  }
+//   if (Number(product.stock) < Number(quantity)) {
+//     throw new Error(`Not enough stock for ${product.name}`);
+//   }
 
-  await strapi.documents('api::product.product').update({
-    documentId: product.documentId,
-    data: {
-      stock: Number(product.stock) - Number(quantity),
-    },
-  });
-};
+//   await strapi.documents('api::product.product').update({
+//     documentId: product.documentId,
+//     data: {
+//       stock: Number(product.stock) - Number(quantity),
+//     },
+//   });
+// };

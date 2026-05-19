@@ -607,10 +607,24 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
+    orderStatus: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'paid',
+        'failed',
+        'completed',
+        'refunded',
+        'cancelled',
+        'refunding',
+      ]
+    >;
+    paymentMethod: Schema.Attribute.String;
     price: Schema.Attribute.Decimal;
     product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.Integer;
+    stripePaymentIntentId: Schema.Attribute.String;
+    stripeSessionId: Schema.Attribute.String;
     totalPrice: Schema.Attribute.Decimal;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -619,6 +633,49 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
+  collectionName: 'payments';
+  info: {
+    displayName: 'Payment';
+    pluralName: 'payments';
+    singularName: 'payment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'USD'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment.payment'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
+    paymentIntentId: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'paid',
+        'failed',
+        'completed',
+        'refunded',
+        'cancelled',
+        'refunding',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1312,6 +1369,7 @@ declare module '@strapi/strapi' {
       'api::category.category': ApiCategoryCategory;
       'api::global.global': ApiGlobalGlobal;
       'api::order.order': ApiOrderOrder;
+      'api::payment.payment': ApiPaymentPayment;
       'api::product-review.product-review': ApiProductReviewProductReview;
       'api::product.product': ApiProductProduct;
       'api::site-detail.site-detail': ApiSiteDetailSiteDetail;

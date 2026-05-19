@@ -1,106 +1,120 @@
-/**
- * order controller
- */
-
 import { factories } from '@strapi/strapi';
 import { createOrUpdateOrder, sendSeccess } from '../utils/order';
 
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
+
+    //   async create(ctx) {
+    //     try {
+
+    //       const user = ctx.state.user;
+    //       const body = ctx.request.body.data || ctx.request.body;
+
+    //       if (!user) return ctx.unauthorized('Not authorized');
+
+    //       const orderService = strapi.service('api::order.order');
+    //         console.log("create roder service:", body, user);
+    //       const result = await orderService.placeOrder(user, body);
+
+    //       return sendSeccess(result.totalPrice, ctx);
+
+    //     } catch (error) {
+    //       return ctx.badRequest(error.message);
+    //     }
+    //   }
     async create(ctx) {
-        try {
-            const user = ctx.state.user;
-            const body = ctx.request.body.data || ctx.request.body;
-            console.log("order controller:",body)
-            if (!user) return ctx.unauthorized('you are not authorized');
-            const cartItems = await strapi.documents('api::cart.cart').findMany({
-                filters: { users_permissions_user: user.documentId },
-                populate: ['products']
+
+        const user = ctx.state.user;
+        const body = ctx.request.body.data || ctx.request.body;
+        console.log("create roder service:", body, user);
+        const cartItems = await strapi.documents('api::cart.cart').findMany({
+            filters: { users_permissions_user: user.id },
+            populate: ['products']
+        });
+
+        const product = await strapi.documents('api::product.product').findOne({
+            documentId: body.productId,
+        });
+        if (!product) throw new Error("Product not found");
+
+        // CASE 1: DIRECT ORDER
+        if (!cartItems.length) {
+
+            if (Number(product.stock) < Number(body.quantity)) {
+                throw new Error("Not enough stock");
+            }
+
+            const price = product.Price?.[0]?.price ?? 0;
+            const totalPrice = price * body.quantity;
+
+            // create order
+            const order = await strapi.documents('api::order.order').create({
+                data: {
+                    product: product.documentId,
+                    users_permissions_user: user.documentId,
+                    quantity: body.quantity,
+                    price,
+                    totalPrice,
+                }
             });
 
-            //direct order -without add to cart 
-            if (!cartItems) {
-                console.log("direct order:", cartItems);
-                const product: any = await strapi.documents('api::product.product').findOne({
-                    documentId: body.productId,
-                });
-
-                if (!product) return ctx.badRequest('product is not found');
-                //place order
-                const productPrice = product.price?.[0]?.price ?? 0;
-                const totalPrice = productPrice * body.quantity;
-                const createdOrders = [];
-                const existsOrder = await strapi.documents('api::order.order').findFirst({
-                    filters: {
-                        users_permissions_user: user.documentId,
-                        product: product.documentId
-                    }
-                })
-                if (existsOrder) {
-                    // update quantity and totalPrice
-                    await strapi.documents('api::order.order').update({
-                        documentId: existsOrder.documentId,
-                        data: {
-                            quantity: existsOrder.quantity + body.quantity,
-                            totalPrice: (existsOrder.quantity + body.quantity) * productPrice,
-                        },
-                    });
-                } else {
-                    const order = await strapi.documents('api::order.order').create({
-                        data: {
-                            product: product.documentId,
-                            users_permissions_user: user.documentId,
-                            quantity: body.quantity,
-                            price: productPrice,
-                            totalPrice: totalPrice,
-                        }
-                    });
-                    createdOrders.push(order);
+            // 🔥 STOCK DEDUCTION (ONLY HERE)
+            await strapi.documents('api::product.product').update({
+                documentId: product.documentId,
+                data: {
+                    stock: Number(product.stock) - Number(body.quantity),
                 }
-                return sendSeccess(totalPrice, ctx);
-            }
+            });
 
-            //if product is exist in cart
-            // Validate stock & prepare order
-            const orderItems = [];
-            let totalPrice = 0;
-            for (const item of cartItems) {
-                console.log("indirect order from cart:", cartItems);
-                const products = item.products;
-                if (!products || products.length === 0) continue;
+            return { order, totalPrice };
+        }
 
-                for (const product of products) {
-                    if (!product) return ctx.badRequest('Product not found');
+        // CASE 2: CART ORDER
 
-                    if (product.stock < item.quantity) {
-                        return ctx.badRequest(`Not enough stock for ${product.name}`);
-                    }
+        let totalPrice = 0;
 
-                    const price = product.Price || 0;
-                    totalPrice += price * item.quantity;
+        for (const item of cartItems) {
+            for (const product of item.products) {
 
-                    orderItems.push({
+                if (!product) throw new Error("Product missing");
+
+                if (Number(product.stock) < Number(item.quantity)) {
+                    throw new Error(`Not enough stock for ${product.name}`);
+                }
+
+                const price = product.Price?.[0]?.price ?? 0;
+
+                totalPrice += price * item.quantity;
+
+                // create order per item
+                await createOrUpdateOrder(
+                    strapi,
+                    user.documentId,
+                    {
                         product: product.documentId,
                         quantity: item.quantity,
-                        price,
-                    });
-                }
-            }
+                        price
+                    }
+                );
 
-            //Create orders
-            const createdOrders = [];
-            for (const orderItem of orderItems) {
-                await createOrUpdateOrder(strapi, user.documentId, orderItem);
-            }
+                console.log("Product ID:", product.documentId);
+                console.log("Old Stock:", product.stock);
+                console.log("order itmes:", item.quantity);
 
-            //Clear cart
-            for (const item of cartItems) {
-                await strapi.documents("api::cart.cart").delete({
-                    documentId: item.documentId
+
+                await strapi.documents('api::product.product').update({
+                    documentId: product.documentId,
+                    data: {
+                        stock: Number(product.stock) - Number(item.quantity),
+                    }
                 });
             }
-            return sendSeccess(totalPrice, ctx)
-        } catch (error) {
-            throw new error(`internal erver error: ${error.message}`)
         }
+
+        // clear cart
+        await strapi.db.query("api::cart.cart").deleteMany({
+            where: { users_permissions_user: user.documentId }
+        });
+
+        return { totalPrice };
     }
 }));

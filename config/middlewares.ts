@@ -11,6 +11,12 @@ const config: Core.Config.Middlewares = [
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
+  // {
+  //   name: "strapi::body",
+  //   config: {
+  //     includeUnparsed: true,
+  //   },
+  // },
 ];
 
 export default config;
