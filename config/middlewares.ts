@@ -7,16 +7,22 @@ const config: Core.Config.Middlewares = [
   'strapi::cors',
   'strapi::poweredBy',
   'strapi::query',
-  'strapi::body',
+  {
+    name: 'strapi::body',
+    config: {
+      patchKoa: true,
+      includeUnparsed: true, // This is key
+      formLimit: '56kb',
+      jsonLimit: '1mb',
+      textLimit: '1mb',
+      formidable: {
+        maxFileSize: 200 * 1024 * 1024,
+      },
+    },
+  },
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
-  // {
-  //   name: "strapi::body",
-  //   config: {
-  //     includeUnparsed: true,
-  //   },
-  // },
 ];
 
 export default config;

@@ -16,7 +16,6 @@
 
 // module.exports = customRouter(defaultRoutes, customRoutes);
 
-
 export default {
   routes: [
     {
@@ -33,14 +32,20 @@ export default {
       handler: "webhook.handleWebhook",
       config: {
         auth: false,
-        // IMPORTANT: disable body parsing
-        middlewares: [],
       },
     },
     {
       method: "POST",
       path: "/payments/refund",
       handler: "payment.refundPayment",
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: "POST",
+      path: "/payments/sync-payment-intent",  // New endpoint
+      handler: "payment.syncPaymentIntent",
       config: {
         auth: false,
       },

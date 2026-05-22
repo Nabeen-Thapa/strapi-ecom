@@ -2,35 +2,17 @@ import { factories } from '@strapi/strapi';
 import { createOrUpdateOrder, sendSeccess } from '../utils/order';
 
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
-
-    //   async create(ctx) {
-    //     try {
-
-    //       const user = ctx.state.user;
-    //       const body = ctx.request.body.data || ctx.request.body;
-
-    //       if (!user) return ctx.unauthorized('Not authorized');
-
-    //       const orderService = strapi.service('api::order.order');
-    //         console.log("create roder service:", body, user);
-    //       const result = await orderService.placeOrder(user, body);
-
-    //       return sendSeccess(result.totalPrice, ctx);
-
-    //     } catch (error) {
-    //       return ctx.badRequest(error.message);
-    //     }
-    //   }
     async create(ctx) {
 
         const user = ctx.state.user;
         const body = ctx.request.body.data || ctx.request.body;
         console.log("create roder service:", body, user);
         const cartItems = await strapi.documents('api::cart.cart').findMany({
-            filters: { users_permissions_user: user.id },
+            // filters: { users_permissions_user: user.documentId },
             populate: ['products']
         });
-
+        console.log("create roder service cart item:", cartItems);
+        console.log("products:", cartItems[0]?.products);
         const product = await strapi.documents('api::product.product').findOne({
             documentId: body.productId,
         });
@@ -43,8 +25,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
                 throw new Error("Not enough stock");
             }
 
-            const price = product.Price?.[0]?.price ?? 0;
+            const price = Number(product.Price) || 0;
             const totalPrice = price * body.quantity;
+            console.log("create order  controller:", price, totalPrice)
+            console.log("create order  controller:", body.quantity)
 
             // create order
             const order = await strapi.documents('api::order.order').create({
@@ -81,9 +65,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
                     throw new Error(`Not enough stock for ${product.name}`);
                 }
 
-                const price = product.Price?.[0]?.price ?? 0;
+                const price = Number(product.Price) || 0
 
                 totalPrice += price * item.quantity;
+                console.log("create order  controller:", price, totalPrice)
 
                 // create order per item
                 await createOrUpdateOrder(
@@ -101,18 +86,20 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
                 console.log("order itmes:", item.quantity);
 
 
-                await strapi.documents('api::product.product').update({
+               const productOrder = await strapi.documents('api::product.product').update({
                     documentId: product.documentId,
                     data: {
                         stock: Number(product.stock) - Number(item.quantity),
                     }
                 });
+
+                console.log("create order controller:",productOrder);
             }
         }
 
         // clear cart
         await strapi.db.query("api::cart.cart").deleteMany({
-            where: { users_permissions_user: user.documentId }
+            where: { users_permissions_user: user.id }
         });
 
         return { totalPrice };
