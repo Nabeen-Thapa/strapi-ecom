@@ -131,44 +131,80 @@ export default factories.createCoreController('api::product.product', ({ strapi 
     },
 
     async search(ctx) {
-        const { q } = ctx.query;
+        try {
+            const { q, ram, ssd, minPrice, maxPrice, sort, page = 1, limit = 12 } = ctx.query;
 
-        if (typeof q !== "string" || !q.trim()) {
-            return ctx.badRequest("Search query is required");
-        }
-
-        const query = q.toLowerCase();
-
-        const products = await strapi.documents(
-            "api::product.product").findMany(
-                {
-                    filters: {
-                    },
-                    populate: {
-                        brand: true,
-                        category: true,
-                        productImages: true,
-                    },
-                }
-            );
-
-        const filtered = (products as any[]).filter((p) => {
-            const name = p.name?.toLowerCase() || "";
-            const brand = p.brand?.name?.toLowerCase() || "";
-            const category = p.category?.name?.toLowerCase() || "";
-
-            return (
-                name.includes(query) ||
-                brand.includes(query) ||
-                category.includes(query)
-            );
-        });
-        if (filtered.length === 0) {
-            return {
-                message: "not product found",
-                data: []
+            const filter: any = {}
+            if (q && typeof q == "string") {
+                filter.$or = [
+                    { name: { $containsi: q } },
+                    { brand: { name: { $containsi: q } } },
+                    { category: { name: { $containsi: q } } },
+                ]
             }
+
+            if (ram) { filter.attributes = { ram: { $containsi: ram } } }
+            if (ssd) { filter.attrubutes = { ssd: { $contains: ssd } } }
+
+            //price
+            if (minPrice || maxPrice) {
+                filter.Price = {};
+                if (minPrice) filter.Price.$gte = Number(minPrice);
+                if (maxPrice) filter.Price.$lte = Number(maxPrice);
+            }
+
+            //sort
+            let sortOption: any = [];
+            switch (sort) {
+                case "price_low":
+                    sortOption = ["price:asc"];
+                    break;
+                case "price_high":
+                    sortOption = ["price:desc"];
+                    break;
+                case "newest":
+                    sortOption = ["createdAt:desc"];
+                    break;
+                case "oldest":
+                    sortOption = ["createdAt:asc"];
+                    break;
+                default:
+                    sortOption = ["createdAt:desc"];
+            }
+
+            const products = await strapi.documents("api::product.product").findMany({
+                filters: filter,
+                populate: {
+                    brand: true,
+                    category: true,
+                    productImages: true,
+                    attributes: true
+                },
+                sort: sortOption,
+                pagination: {
+                    page: Number(page),
+                    pageSize: Number(limit),
+                },
+            });
+
+            return {
+                data: products,
+                filtersApplied: {
+                    q,
+                    ram,
+                    ssd,
+                    minPrice,
+                    maxPrice,
+                    sort,
+                },
+                meta: {
+                    page,
+                    limit,
+                    total: products.length,
+                },
+            };
+        } catch (error) {
+            throw error
         }
-        return filtered;
     }
 }));

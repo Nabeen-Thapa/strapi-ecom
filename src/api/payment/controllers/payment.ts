@@ -57,7 +57,7 @@ export default factories.createCoreController("api::payment.payment", ({ strapi 
 
             console.log("Session payment intent:", session.payment_intent);
             console.log("Session payment status:", session.payment_status);
-const paymentIntent = session.payment_intent as string;
+            const paymentIntent = session.payment_intent as string;
             if (session.payment_intent && session.payment_status === 'paid') {
                 // Update order with payment intent ID
                 const updatedOrder = await strapi.entityService.update("api::order.order", orderId, {
